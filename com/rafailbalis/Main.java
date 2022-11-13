@@ -253,8 +253,14 @@ public class Main extends Application{
             String sidQuery = "SELECT sid \n" +
                     "from ship\n" +
                     "where shipname = ? ";
+
             PreparedStatement stmt = conn.prepareStatement(sidQuery);
-            stmt.setString(1, comShipsGRC.getSelectionModel().getSelectedItem());
+
+            if (rdcountry[0].isSelected()){
+                stmt.setString(1, comShipsGRC.getSelectionModel().getSelectedItem());
+            } else if (rdcountry[1].isSelected()) {
+                stmt.setString(1, comShipsTUR.getSelectionModel().getSelectedItem());
+            }
             ResultSet result = stmt.executeQuery();
             result.next();
             String sidship = result.getString(1);
@@ -272,6 +278,12 @@ public class Main extends Application{
                         "rafailORF", "javauser1234")) {
           String zoom = chozoom.getSelectionModel().getSelectedItem();
           String table = "datalow";
+          int inputPerline = Integer.parseInt(txtPerLines.getText());
+          Integer [] FinalData = new Integer [2];
+          FinalData [0] = -20000;
+          FinalData [1] = -20000;
+
+
 
             if (zoom == "M") {
                 table = "datamed";
@@ -279,18 +291,27 @@ public class Main extends Application{
                 table= "datahigh";
             } else table = "datalow";
 
-            String datQuery = "SELECT Distance \n" +
+            String Query = "SELECT Perlines, Distance \n" +
                     "FROM " + table + " \n" +
-                    "where Perlines = ? and sid=?";
+                    "where sid=?";
 
-            PreparedStatement stmt2 = conn.prepareStatement(datQuery);
-            stmt2.setString(1, txtPerLines.getText());
-            stmt2.setString(2, sidShip());
-
-            ResultSet dataResult = stmt2.executeQuery();
-            dataResult.next();
-
-            txtresults.setText(dataResult.getString(1));
+            PreparedStatement stmt2 = conn.prepareStatement(Query);
+            stmt2.setString(1, sidShip());
+            ResultSet result = stmt2.executeQuery();
+            while (result.next()) {
+                if (result.getInt(1) == inputPerline) {
+                    FinalData[0] = result.getInt(2);
+                    FinalData[1] = result.getInt(2);
+                    break;
+                } else if (result.getInt(1) < inputPerline) {
+                    FinalData[0] = result.getInt(2);
+                } else if (result.getInt(1) > inputPerline) {
+                    FinalData [1] = result.getInt(2);
+                }
+            }
+            Integer myresult = (FinalData[0] + FinalData[1])/2;
+            txtresults.setText(String.valueOf(myresult));
+            txtresults.setFont(Font.font("Arial", FontWeight.BOLD, 12));
 
         } catch (SQLException b) {
             System.err.println(b);
